@@ -40,7 +40,7 @@ public class Task {
     return description;
   }
 
-  public void setDescription(String newDescription) {
+  public void updateDescription(String newDescription) {
     description = newDescription;
     updateAt = LocalDate.now();
   }
@@ -49,7 +49,7 @@ public class Task {
     return status;
   }
 
-  public void setStatus(Status newStatus) {
+  public void updateStatus(Status newStatus) {
     status = newStatus;
     updateAt = LocalDate.now();
   }
