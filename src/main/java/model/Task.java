@@ -5,20 +5,34 @@ import enums.Status;
 import java.time.LocalDate;
 
 public class Task {
-  private static int id;
+  private static int idControler = 0;
+
+  private int id;
   private String description;
   private Status status;
   private final LocalDate createdAt;
   private LocalDate updateAt;
 
-  public Task(String description, Status status, LocalDate createdAt) {
-    id += 1;
+  public Task(String description, Status status) {
+    id += idControler;
+    idControler++;
     this.description = description;
     this.status = status;
-    this.createdAt = createdAt;
+    this.createdAt = LocalDate.now();
   }
 
-  public static int getId() {
+  @Override
+  public String toString() {
+    return
+            "id= " + id +
+            "\ndescription=" + description +
+            "\nstatus=" + status +
+            "\ncreatedAt=" + createdAt +
+            "\nupdateAt=" + updateAt +
+            "\n";
+  }
+
+  public int getId() {
     return id;
   }
 
