@@ -16,12 +16,12 @@ public class JsonReaderService {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
 
-    try {
-      List<Task> taskList = objectMapper.readValue(new BufferedReader(new FileReader(filePath)), new TypeReference<List<Task>>(){});
+    try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))){
+      List<Task> taskList = objectMapper.readValue(bufferedReader, new TypeReference<List<Task>>(){});
       return taskList;
     } catch (IOException e) {
       System.out.println("Erro na leitura do arquivo .json: " + e.getMessage());
+      return null;
     }
-    return null;
   }
 }
