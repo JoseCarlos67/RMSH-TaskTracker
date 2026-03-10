@@ -17,7 +17,7 @@ public class JsonReaderServiceTest {
     JsonReaderService service = new JsonReaderService();
     String filePath = "src/test/java/files/tasks.json";
 
-    List<Task> result = service.newOjbjectFromFileJson(filePath);
+    List<Task> result = service.newOjbjectFromJsonFile(filePath);
 
     assertNotNull(result, "A lista não deve ser nula para um .json válido!");
     assertEquals(2, result.size(), "A lista deve conter exatamente 2 tarefas!");

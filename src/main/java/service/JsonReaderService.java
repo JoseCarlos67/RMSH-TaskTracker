@@ -12,7 +12,7 @@ import java.util.List;
 
 public class JsonReaderService {
 
-  public List<Task> newOjbjectFromFileJson(String filePath) {
+  public List<Task> newOjbjectFromJsonFile(String filePath) {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
 
