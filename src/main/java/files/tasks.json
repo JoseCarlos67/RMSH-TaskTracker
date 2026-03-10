@@ -1,1 +1,24 @@
-{"id":0,"description":"Configurar ambiente Linux","status":"DONE","createdAt":[2026,3,8],"updateAt":null}
+[
+  {
+    "id": 0,
+    "description": "Configurar ambiente Linux",
+    "status": "DONE",
+    "createdAt": [
+      2026,
+      3,
+      8
+    ],
+    "updateAt": null
+  },
+  {
+    "id": 1,
+    "description": "Comprar ovos no mercado novo.",
+    "status": "TODO",
+    "createdAt": [
+      2026,
+      3,
+      8
+    ],
+    "updateAt": [2026,3, 19]
+  }
+]

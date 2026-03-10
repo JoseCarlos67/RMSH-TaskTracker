@@ -1,6 +1,8 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import enums.Status;
 
 import java.time.LocalDate;
@@ -16,7 +18,6 @@ public class Task {
   private LocalDate createdAt;
   private LocalDate updateAt;
 
-  public Task() {}
 
   public Task(String description, Status status) {
     id += idControler;
@@ -26,7 +27,11 @@ public class Task {
     this.createdAt = LocalDate.now();
   }
 
-  public Task(String description, Status status, LocalDate createdAt, LocalDate updateAt) {
+  @JsonCreator
+  public Task(@JsonProperty("description") String description,
+              @JsonProperty("status") Status status,
+              @JsonProperty("createdAt") LocalDate createdAt,
+              @JsonProperty("updateAt") LocalDate updateAt) {
     id += idControler;
     idControler++;
     this.description = description;

@@ -5,12 +5,13 @@ import model.Task;
 import service.JsonReaderService;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Program {
   public static void main(String[] args) throws IOException {
     JsonReaderService jsonReaderService = new JsonReaderService();
-    Task task = jsonReaderService.newOjbjectFromFileJson();
+    List<Task> taskList = jsonReaderService.newOjbjectFromFileJson();
 
-    System.out.println(task);
+    taskList.stream().forEach(System.out::println);
   }
 }
