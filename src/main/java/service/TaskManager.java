@@ -11,6 +11,7 @@ import org.jline.terminal.Attributes;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -39,8 +40,13 @@ public class TaskManager {
           switch (comand) {
             case "new":
               newTask(terminal, prompt, lineReader);
+              break;
             case "list":
-              listTasks(terminal);
+              listTasks();
+              break;
+            case "delete":
+              deleteTask(terminal, lineReader, prompt);
+              break;
           }
         } catch (UserInterruptException e) {
           terminal.writer().println("\nProcesso interrompido (ctrl+c)!");
@@ -64,11 +70,22 @@ public class TaskManager {
     }
   }
 
-  private void listTasks(Terminal terminal) throws IOException {
+  private void listTasks() throws IOException {
     JsonReaderService jsonReaderService = new JsonReaderService();
     List<Task> taskList = jsonReaderService.newOjbjectFromJsonFile("src/main/java/files/tasks.json");
     System.out.println();
     taskList.stream().forEach(System.out::println);
+  }
+
+  private void deleteTask(Terminal terminal, LineReader lineReader, String promt) {
+    String idToRemove = lineReader.readLine(promt + "Digite o ID da tarefa que deseja deletar: ");
+    int idToRemoveInt = Integer.parseInt(idToRemove);
+    JsonReaderService jsonReaderService = new JsonReaderService();
+    List<Task> taskList = jsonReaderService.newOjbjectFromJsonFile("src/main/java/files/tasks.json");
+
+    taskList.removeIf(task -> task.getId() == idToRemoveInt);
+    JsonWriterService jsonWriterService = new JsonWriterService();
+    jsonWriterService.writeListToJsonFile(taskList);
   }
 
   public Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
