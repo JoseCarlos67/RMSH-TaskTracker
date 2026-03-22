@@ -7,13 +7,12 @@ import service.JsonReaderService;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JsonReaderServiceTest {
   @Test
   @DisplayName("Deve retornar uma lista se o .json for valido")
-  void shouldReturnTaskListWhenJsonFileIsValid() {
+  void newObjectFromJsonFile_ShouldReturnTaskList_WhenJsonFileIsValid() {
     JsonReaderService service = new JsonReaderService();
     String filePath = "src/test/java/files/tasks.json";
 
@@ -27,6 +26,6 @@ public class JsonReaderServiceTest {
     assertEquals("Configurar ambiente Linux", task0.getDescription());
     assertEquals(Status.DONE,task0.getStatus());
     assertEquals(LocalDate.of(2026, 3, 8), task0.getCreatedAt());
-    assertEquals(null, task0.getUpdateAt());
+    assertNull(task0.getUpdateAt());
   }
 }
