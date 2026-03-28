@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TaskManager {
+  String filePath = "src/main/java/files/tasks.json";
   public void taskManager() {
     try (Terminal terminal = TerminalBuilder.builder().build()) {
       Completer autoCompleter = new StringsCompleter("new", "list", "delete", "update", "exit");
@@ -61,8 +62,12 @@ public class TaskManager {
     String description = lineReader.readLine(prompt + "Task description: ");
     try {
       Status status = showInteractiveStatusMenu(terminal);
+      JsonReaderService jsonReaderService = new JsonReaderService();
+      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
       JsonWriterService jsonWriterService = new JsonWriterService();
-      jsonWriterService.writeToTheNewJsonFile(new Task(description, status));
+      Task newTask = new Task(description, status);
+      taskList.add(newTask);
+      jsonWriterService.updateJsonFile(taskList);
     } catch (UserInterruptException e) {
       terminal.writer().println(e.getMessage());
     } catch (IOException e) {
@@ -72,7 +77,7 @@ public class TaskManager {
 
   private void listTasks() throws IOException {
     JsonReaderService jsonReaderService = new JsonReaderService();
-    List<Task> taskList = jsonReaderService.newOjbjectFromJsonFile("src/main/java/files/tasks.json");
+    List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
     System.out.println();
     taskList.stream().forEach(System.out::println);
   }
@@ -81,11 +86,11 @@ public class TaskManager {
     String idToRemove = lineReader.readLine(promt + "Digite o ID da tarefa que deseja deletar: ");
     int idToRemoveInt = Integer.parseInt(idToRemove);
     JsonReaderService jsonReaderService = new JsonReaderService();
-    List<Task> taskList = jsonReaderService.newOjbjectFromJsonFile("src/main/java/files/tasks.json");
+    List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
 
     taskList.removeIf(task -> task.getId() == idToRemoveInt);
     JsonWriterService jsonWriterService = new JsonWriterService();
-    jsonWriterService.writeListToJsonFile(taskList);
+    jsonWriterService.updateJsonFile(taskList);
   }
 
   public Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
