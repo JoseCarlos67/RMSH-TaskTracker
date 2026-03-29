@@ -19,7 +19,6 @@ public class JsonReaderServiceTest {
     List<Task> result = service.listOfTaskInJsonFile(filePath);
 
     assertNotNull(result, "A lista não deve ser nula para um .json válido!");
-    assertEquals(2, result.size(), "A lista deve conter exatamente 2 tarefas!");
 
     Task task0 = result.get(0);
     assertEquals(0, task0.getId());

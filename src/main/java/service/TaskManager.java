@@ -17,7 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TaskManager {
-  String filePath = "src/main/java/files/tasks.json";
+  private static String filePath = "src/main/java/files/tasks.json";
+  private static JsonReaderService jsonReaderService = new JsonReaderService();
+
   public void taskManager() {
     try (Terminal terminal = TerminalBuilder.builder().build()) {
       Completer autoCompleter = new StringsCompleter("new", "list", "delete", "update", "exit");
@@ -46,9 +48,10 @@ public class TaskManager {
               listTasks();
               break;
             case "delete":
-              deleteTask(terminal, lineReader, prompt);
+              deleteTask(lineReader, prompt);
               break;
             case "update":
+              updateTask(terminal, prompt, lineReader);
               break;
             case "exit":
               System.exit(0);
@@ -67,7 +70,6 @@ public class TaskManager {
     String description = lineReader.readLine(prompt + "Task description: ");
     try {
       Status status = showInteractiveStatusMenu(terminal);
-      JsonReaderService jsonReaderService = new JsonReaderService();
       List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
       JsonWriterService jsonWriterService = new JsonWriterService();
       Task newTask = new Task(description, status);
@@ -81,21 +83,34 @@ public class TaskManager {
   }
 
   private void listTasks() throws IOException {
-    JsonReaderService jsonReaderService = new JsonReaderService();
     List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
     System.out.println();
     taskList.stream().forEach(System.out::println);
   }
 
-  private void deleteTask(Terminal terminal, LineReader lineReader, String promt) {
+  private void deleteTask(LineReader lineReader, String promt) {
     String idToRemove = lineReader.readLine(promt + "Digite o ID da tarefa que deseja deletar: ");
     int idToRemoveInt = Integer.parseInt(idToRemove);
-    JsonReaderService jsonReaderService = new JsonReaderService();
     List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
 
     taskList.removeIf(task -> task.getId() == idToRemoveInt);
     JsonWriterService jsonWriterService = new JsonWriterService();
     jsonWriterService.updateJsonFile(taskList);
+  }
+
+  private void updateTask(Terminal terminal, String prompt, LineReader lineReader) {
+    int taskId = Integer.parseInt(lineReader.readLine(prompt + "Task ID:" ));
+
+    List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
+
+    Task taskToUpdate = taskList.stream().filter(t -> t.getId().equals(taskId)).findFirst().orElse(null);
+
+    if (taskToUpdate != null) {
+      String newDescription = lineReader.readLine(prompt + " New description: ", null, taskToUpdate.getDescription());
+      taskToUpdate.updateDescription(newDescription);
+    } else {
+      terminal.writer().println("ID not found!");
+    }
   }
 
   public Status showInteractiveStatusMenu(Terminal terminal) throws IOException {

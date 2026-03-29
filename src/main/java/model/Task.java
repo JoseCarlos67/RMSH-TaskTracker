@@ -10,9 +10,9 @@ import java.time.LocalDate;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Task {
 
-  private static int idControler = 0;
+  private static Integer idControler = 1;
 
-  private int id;
+  private Integer id;
   private String description;
   private Status status;
   private LocalDate createdAt;
@@ -20,7 +20,7 @@ public class Task {
 
 
   public Task(String description, Status status) {
-    id += idControler;
+    id = idControler;
     idControler++;
     this.description = description;
     this.status = status;
@@ -32,7 +32,7 @@ public class Task {
               @JsonProperty("status") Status status,
               @JsonProperty("createdAt") LocalDate createdAt,
               @JsonProperty("updateAt") LocalDate updateAt) {
-    id += idControler;
+    id = idControler;
     idControler++;
     this.description = description;
     this.status = status;
@@ -51,7 +51,7 @@ public class Task {
             "\n";
   }
 
-  public int getId() {
+  public Integer getId() {
     return id;
   }
 
