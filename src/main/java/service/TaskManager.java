@@ -48,6 +48,11 @@ public class TaskManager {
             case "delete":
               deleteTask(terminal, lineReader, prompt);
               break;
+            case "update":
+              break;
+            case "exit":
+              System.exit(0);
+              break;
           }
         } catch (UserInterruptException e) {
           terminal.writer().println("\nProcesso interrompido (ctrl+c)!");
