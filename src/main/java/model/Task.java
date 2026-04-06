@@ -64,13 +64,13 @@ public class Task {
     updateAt = LocalDate.now();
   }
 
-  public Status getStatus() {
-    return status;
-  }
-
   public void updateStatus(Status newStatus) {
     status = newStatus;
     updateAt = LocalDate.now();
+  }
+
+  public Status getStatus() {
+    return status;
   }
 
   public LocalDate getCreatedAt() {

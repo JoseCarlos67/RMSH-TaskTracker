@@ -108,6 +108,16 @@ public class TaskManager {
     if (taskToUpdate != null) {
       String newDescription = lineReader.readLine(prompt + " New description: ", null, taskToUpdate.getDescription());
       taskToUpdate.updateDescription(newDescription);
+      try {
+        Status newStatus = showInteractiveStatusMenu(terminal);
+        taskToUpdate.updateStatus(newStatus);
+      } catch (UserInterruptException e) {
+        terminal.writer().println(e.getMessage());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      JsonWriterService jsonWriterService = new JsonWriterService();
+      jsonWriterService.updateJsonFile(taskList);
     } else {
       terminal.writer().println("ID not found!");
     }
