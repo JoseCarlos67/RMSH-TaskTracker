@@ -15,6 +15,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class TaskManager {
   private static String filePath = "src/main/java/files/tasks.json";
@@ -38,9 +39,9 @@ public class TaskManager {
         try {
           line = lineReader.readLine(prompt);
 
-          String comand = line.trim().toLowerCase();
+          String command[] = line.trim().split("\\s+");
 
-          switch (comand) {
+          switch (command[0]) {
             case "new":
               newTask(terminal, prompt, lineReader);
               break;
@@ -48,10 +49,10 @@ public class TaskManager {
               listTasks();
               break;
             case "delete":
-              deleteTask(lineReader, prompt);
+              deleteTask(command, terminal);
               break;
             case "update":
-              updateTask(terminal, prompt, lineReader);
+              updateTask(terminal, prompt, lineReader, command);
               break;
             case "exit":
               System.exit(0);
@@ -88,39 +89,54 @@ public class TaskManager {
     taskList.stream().forEach(System.out::println);
   }
 
-  private void deleteTask(LineReader lineReader, String promt) {
-    String idToRemove = lineReader.readLine(promt + "Digite o ID da tarefa que deseja deletar: ");
-    int idToRemoveInt = Integer.parseInt(idToRemove);
-    List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
+  private void deleteTask(String[] command, Terminal terminal) {
+    if (command.length == 2) {
+      int idToRemoveInt = Integer.parseInt(command[2]);
+      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
 
-    taskList.removeIf(task -> task.getId() == idToRemoveInt);
-    JsonWriterService jsonWriterService = new JsonWriterService();
-    jsonWriterService.updateJsonFile(taskList);
-  }
-
-  private void updateTask(Terminal terminal, String prompt, LineReader lineReader) {
-    int taskId = Integer.parseInt(lineReader.readLine(prompt + "Task ID:" ));
-
-    List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
-
-    Task taskToUpdate = taskList.stream().filter(t -> t.getId().equals(taskId)).findFirst().orElse(null);
-
-    if (taskToUpdate != null) {
-      String newDescription = lineReader.readLine(prompt + " New description: ", null, taskToUpdate.getDescription());
-      taskToUpdate.updateDescription(newDescription);
-      try {
-        Status newStatus = showInteractiveStatusMenu(terminal);
-        taskToUpdate.updateStatus(newStatus);
-      } catch (UserInterruptException e) {
-        terminal.writer().println(e.getMessage());
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      taskList.removeIf(task -> task.getId() == idToRemoveInt);
       JsonWriterService jsonWriterService = new JsonWriterService();
       jsonWriterService.updateJsonFile(taskList);
     } else {
-      terminal.writer().println("ID not found!");
+      terminal.writer().println("Error: this command requires 1 parameter!");
     }
+
+  }
+
+  private void updateTask(Terminal terminal, String prompt, LineReader lineReader, String[] command) {
+    if (command.length == 3){
+      int taskId = Integer.parseInt(command[2]);
+      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
+      Task taskToUpdate = taskList.stream().filter(t -> t.getId().equals(taskId)).findFirst().orElse(null);
+
+      if (taskToUpdate != null) {
+        if (Objects.equals(command[1], "description")) {
+          String newDescription = lineReader.readLine(prompt + " New description: ", null, taskToUpdate.getDescription());
+          taskToUpdate.updateDescription(newDescription);
+        } else if (Objects.equals(command[1], "status")) {
+          try {
+            Status newStatus = showInteractiveStatusMenu(terminal);
+            taskToUpdate.updateStatus(newStatus);
+          } catch (UserInterruptException e) {
+            terminal.writer().println(e.getMessage());
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        } else {
+          terminal.writer().println("Command " + command[1] + " not found");
+        }
+
+
+
+        JsonWriterService jsonWriterService = new JsonWriterService();
+        jsonWriterService.updateJsonFile(taskList);
+      } else {
+        terminal.writer().println("ID not found!");
+      }
+    } else {
+      terminal.writer().println("Error: this command requires 2 parameters!");
+    }
+
   }
 
   public Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
