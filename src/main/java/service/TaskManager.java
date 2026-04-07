@@ -10,6 +10,8 @@ import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Attributes;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -31,7 +33,11 @@ public class TaskManager {
               .build();
 
 
-      String prompt = "task-tracker>";
+      String prompt = new AttributedStringBuilder()
+              .append("\n task ", AttributedStyle.DEFAULT.background(AttributedStyle.BLUE).foreground(AttributedStyle.WHITE))
+              .append("\uE0B0 ", AttributedStyle.DEFAULT.foreground(AttributedStyle.BLUE))
+              .append("❯ ", AttributedStyle.BOLD.foreground(AttributedStyle.YELLOW))
+              .toAnsi();
 
       while (true) {
         String line;
@@ -46,7 +52,7 @@ public class TaskManager {
               newTask(terminal, prompt, lineReader);
               break;
             case "list":
-              listTasks();
+              listTasks(terminal);
               break;
             case "delete":
               deleteTask(command, terminal);
@@ -83,10 +89,25 @@ public class TaskManager {
     }
   }
 
-  private void listTasks() throws IOException {
+  private void listTasks(Terminal terminal) throws IOException {
     List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
-    System.out.println();
-    taskList.stream().forEach(System.out::println);
+    terminal.writer().println(new AttributedStringBuilder()
+            .append(String.format("\n %-4s | %-25s | %-12s", "ID", "DESCRIÇÃO", "STATUS")
+              , AttributedStyle.DEFAULT.italic().foreground(AttributedStyle.BRIGHT))
+            .toAnsi());
+    terminal.writer().println("━".repeat(50));
+
+    for (Task t : taskList) {
+      String statusColor = switch (t.getStatus()) {
+        case DONE -> "\u001B[32m"; // Verde
+        case IN_PROGRESS -> "\u001B[34m"; // Azul
+        default -> "\u001B[37m"; // Branco
+      };
+
+      terminal.writer().printf(" #%03d | %-25s | %s%s\u001B[0m\n",
+              t.getId(), t.getDescription(), statusColor, t.getStatus());
+    }
+    terminal.writer().flush();
   }
 
   private void deleteTask(String[] command, Terminal terminal) {
@@ -100,7 +121,6 @@ public class TaskManager {
     } else {
       terminal.writer().println("Error: this command requires 1 parameter!");
     }
-
   }
 
   private void updateTask(Terminal terminal, String prompt, LineReader lineReader, String[] command) {
@@ -126,8 +146,6 @@ public class TaskManager {
           terminal.writer().println("Command " + command[1] + " not found");
         }
 
-
-
         JsonWriterService jsonWriterService = new JsonWriterService();
         jsonWriterService.updateJsonFile(taskList);
       } else {
@@ -136,7 +154,6 @@ public class TaskManager {
     } else {
       terminal.writer().println("Error: this command requires 2 parameters!");
     }
-
   }
 
   public Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
@@ -163,12 +180,17 @@ public class TaskManager {
         firstRender = false;
 
         for (int i = 0; i < options.size(); i++) {
-          terminal.writer().print("\u001B[2K\r");
-
+          String label = options.get(i);
+          String icon = switch (label) {
+            case "TODO" -> "\u26AA";
+            case "IN_PROGRESS" -> "\uD83D\uDD35";
+            case "DONE" -> "\u2705";
+            default -> "\uD83D\uDCCB";
+          };
           if (i == selectionIndex) {
-            terminal.writer().print(" > \u001B[32m" + options.get(i) + "\u001B[0m\r\n");
+            terminal.writer().print(" ➜ " + icon + "\u001B[32;1m" + label + "\u001B[0m\r\n");
           } else {
-            terminal.writer().print("   " + options.get(i) + "\r\n");
+            terminal.writer().print("   " + icon + label + "\r\n");
           }
         }
         terminal.writer().flush();

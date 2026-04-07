@@ -2,10 +2,9 @@ package application;
 
 import service.TaskManager;
 
-import java.io.IOException;
-
 public class Program {
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) {
+    System.setProperty("file.encondig", "UTF-8");
     TaskManager taskManager = new TaskManager();
     taskManager.taskManager();
   }
