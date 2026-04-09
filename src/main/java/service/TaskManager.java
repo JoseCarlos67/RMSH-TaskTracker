@@ -10,6 +10,7 @@ import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Attributes;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
@@ -42,30 +43,32 @@ public class TaskManager {
       while (true) {
         String line;
 
-        try {
-          line = lineReader.readLine(prompt);
+        line = lineReader.readLine(prompt);
 
-          String command[] = line.trim().split("\\s+");
+        String command[] = line.trim().split("\\s+");
 
-          switch (command[0]) {
-            case "new":
-              newTask(terminal, prompt, lineReader);
-              break;
-            case "list":
-              listTasks(terminal);
-              break;
-            case "delete":
-              deleteTask(command, terminal);
-              break;
-            case "update":
-              updateTask(terminal, prompt, lineReader, command);
-              break;
-            case "exit":
-              System.exit(0);
-              break;
-          }
-        } catch (UserInterruptException e) {
-          terminal.writer().println("\nProcesso interrompido (ctrl+c)!");
+        switch (command[0]) {
+          case "new":
+            newTask(terminal, prompt, lineReader);
+            break;
+          case "list":
+            listTasks(terminal);
+            break;
+          case "delete":
+            deleteTask(command, terminal);
+            break;
+          case "update":
+            updateTask(terminal, prompt, lineReader, command);
+            break;
+          case "exit":
+            System.exit(0);
+            break;
+          default:
+            AttributedString error = new AttributedStringBuilder()
+                    .append("\n\uD83D\uDEAB", AttributedStyle.DEFAULT)
+                    .append("  Error: command " + command[0] + " not found!", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold())
+                    .toAttributedString();
+            terminal.writer().println(error.toAnsi());
         }
       }
     } catch (IOException e) {
@@ -74,14 +77,30 @@ public class TaskManager {
   }
 
   private void newTask(Terminal terminal, String prompt, LineReader lineReader) {
-    String description = lineReader.readLine(prompt + "Task description: ");
     try {
+      String descPrompt = new AttributedStringBuilder()
+              .append(" 📝 Description: ", AttributedStyle.DEFAULT.foreground(AttributedStyle.WHITE))
+              .toAnsi();
+      String description = lineReader.readLine(descPrompt);
+
+      if (description == null || description.trim().isEmpty()) {
+        terminal.writer().println("\u001B[91m ❌ The description cannot be empty!\u001B[0m");
+        return;
+      }
+
       Status status = showInteractiveStatusMenu(terminal);
+
       List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
       JsonWriterService jsonWriterService = new JsonWriterService();
+
       Task newTask = new Task(description, status);
       taskList.add(newTask);
       jsonWriterService.updateJsonFile(taskList);
+
+      terminal.writer().println(new AttributedStringBuilder()
+              .append("\n ✅ Task successfully registered!", AttributedStyle.BOLD.foreground(AttributedStyle.GREEN))
+              .toAnsi());
+      terminal.writer().flush();
     } catch (UserInterruptException e) {
       terminal.writer().println(e.getMessage());
     } catch (IOException e) {
@@ -93,7 +112,7 @@ public class TaskManager {
     List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
     terminal.writer().println(new AttributedStringBuilder()
             .append(String.format("\n %-4s | %-25s | %-12s", "ID", "DESCRIÇÃO", "STATUS")
-              , AttributedStyle.DEFAULT.italic().foreground(AttributedStyle.BRIGHT))
+                    , AttributedStyle.DEFAULT.italic().foreground(AttributedStyle.BRIGHT))
             .toAnsi());
     terminal.writer().println("━".repeat(50));
 
@@ -119,21 +138,46 @@ public class TaskManager {
       JsonWriterService jsonWriterService = new JsonWriterService();
       jsonWriterService.updateJsonFile(taskList);
     } else {
-      terminal.writer().println("Error: this command requires 1 parameter!");
+      AttributedString error = new AttributedStringBuilder()
+              .append("\n\uD83D\uDEAB", AttributedStyle.DEFAULT)
+              .append("  Error: this command requires 1 parameter!", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold())
+              .toAttributedString();
+      terminal.writer().println(error.toAnsi());
     }
   }
 
   private void updateTask(Terminal terminal, String prompt, LineReader lineReader, String[] command) {
-    if (command.length == 3){
+    if (command.length == 3) {
       int taskId = Integer.parseInt(command[2]);
       List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
-      Task taskToUpdate = taskList.stream().filter(t -> t.getId().equals(taskId)).findFirst().orElse(null);
 
-      if (taskToUpdate != null) {
-        if (Objects.equals(command[1], "description")) {
-          String newDescription = lineReader.readLine(prompt + " New description: ", null, taskToUpdate.getDescription());
+      if (Objects.equals(command[1], "description")) {
+        Task taskToUpdate = taskList.stream().filter(t -> t.getId().equals(taskId)).findFirst().orElse(null);
+        if (taskToUpdate != null) {
+          String descPrompt = new AttributedStringBuilder()
+                  .append(" 📝 Description: ", AttributedStyle.DEFAULT.foreground(AttributedStyle.WHITE))
+                  .toAnsi();
+          String newDescription = lineReader.readLine(descPrompt);
           taskToUpdate.updateDescription(newDescription);
-        } else if (Objects.equals(command[1], "status")) {
+          terminal.writer().println(new AttributedStringBuilder()
+                  .append("\n ✅ Task successfully updated!", AttributedStyle.BOLD.foreground(AttributedStyle.GREEN))
+                  .toAnsi());
+          terminal.writer().flush();
+
+          if (newDescription == null || newDescription.trim().isEmpty()) {
+            terminal.writer().println("\u001B[91m ❌ The description cannot be empty!\u001B[0m");
+            return;
+          }
+        } else {
+          AttributedString error = new AttributedStringBuilder()
+                  .append("\n❌", AttributedStyle.DEFAULT)
+                  .append("  Error: ID not found!", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold())
+                  .toAttributedString();
+          terminal.writer().println(error.toAnsi());
+        }
+      } else if (Objects.equals(command[1], "status")) {
+        Task taskToUpdate = taskList.stream().filter(t -> t.getId().equals(taskId)).findFirst().orElse(null);
+        if (taskToUpdate != null) {
           try {
             Status newStatus = showInteractiveStatusMenu(terminal);
             taskToUpdate.updateStatus(newStatus);
@@ -143,16 +187,29 @@ public class TaskManager {
             throw new RuntimeException(e);
           }
         } else {
-          terminal.writer().println("Command " + command[1] + " not found");
+          AttributedString error = new AttributedStringBuilder()
+                  .append("\n❌", AttributedStyle.DEFAULT)
+                  .append("  Error: ID not found!", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold())
+                  .toAttributedString();
+          terminal.writer().println(error.toAnsi());
         }
 
-        JsonWriterService jsonWriterService = new JsonWriterService();
-        jsonWriterService.updateJsonFile(taskList);
       } else {
-        terminal.writer().println("ID not found!");
+        AttributedString error = new AttributedStringBuilder()
+                .append("\n\uD83D\uDEAB", AttributedStyle.DEFAULT)
+                .append("  Error: command " + command[1] + " not found!", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold())
+                .toAttributedString();
+        terminal.writer().println(error.toAnsi());
       }
+
+      JsonWriterService jsonWriterService = new JsonWriterService();
+      jsonWriterService.updateJsonFile(taskList);
     } else {
-      terminal.writer().println("Error: this command requires 2 parameters!");
+      AttributedString error = new AttributedStringBuilder()
+              .append("\n\uD83D\uDEAB", AttributedStyle.DEFAULT)
+              .append("  Error: this command requires 2 parameters!", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold())
+              .toAttributedString();
+      terminal.writer().println(error.toAnsi());
     }
   }
 
