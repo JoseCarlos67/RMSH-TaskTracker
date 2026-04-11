@@ -24,8 +24,17 @@ public class TaskManager {
   private static String filePath = "src/main/java/files/tasks.json";
   private static JsonReaderService jsonReaderService = new JsonReaderService();
 
-  public void taskManager() {
+  public static void taskManager() {
     try (Terminal terminal = TerminalBuilder.builder().build()) {
+      terminal.writer().println("\u001B[35m" + // Cor Magenta
+              "  _____              _      __  __                                \n" +
+              " |_   _|_ _ ___ | | __ |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ \n" +
+              "   | |/ _` / __|| |/ / | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|\n" +
+              "   | | (_| \\__ \\|   <  | |  | | (_| | | | | (_| | (_| |  __/ |   \n" +
+              "   |_|\\__,_|___/|_|\\_\\ |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   \n" +
+              "                                                  |___/           " +
+              "\u001B[0m");
+
       Completer autoCompleter = new StringsCompleter("new", "list", "delete", "update", "exit");
 
       LineReader lineReader = LineReaderBuilder.builder()
@@ -76,7 +85,7 @@ public class TaskManager {
     }
   }
 
-  private void newTask(Terminal terminal, String prompt, LineReader lineReader) {
+  private static void newTask(Terminal terminal, String prompt, LineReader lineReader) {
     try {
       String descPrompt = new AttributedStringBuilder()
               .append(" 📝 Description: ", AttributedStyle.DEFAULT.foreground(AttributedStyle.WHITE))
@@ -108,7 +117,7 @@ public class TaskManager {
     }
   }
 
-  private void listTasks(Terminal terminal) throws IOException {
+  private static void listTasks(Terminal terminal) throws IOException {
     List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
     terminal.writer().println(new AttributedStringBuilder()
             .append(String.format("\n %-4s | %-25s | %-12s", "ID", "DESCRIÇÃO", "STATUS")
@@ -129,7 +138,7 @@ public class TaskManager {
     terminal.writer().flush();
   }
 
-  private void deleteTask(String[] command, Terminal terminal) {
+  private static void deleteTask(String[] command, Terminal terminal) {
     if (command.length == 2) {
       int idToRemoveInt = Integer.parseInt(command[2]);
       List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
@@ -146,7 +155,7 @@ public class TaskManager {
     }
   }
 
-  private void updateTask(Terminal terminal, String prompt, LineReader lineReader, String[] command) {
+  private static void updateTask(Terminal terminal, String prompt, LineReader lineReader, String[] command) {
     if (command.length == 3) {
       int taskId = Integer.parseInt(command[2]);
       List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
@@ -155,7 +164,7 @@ public class TaskManager {
         Task taskToUpdate = taskList.stream().filter(t -> t.getId().equals(taskId)).findFirst().orElse(null);
         if (taskToUpdate != null) {
           String descPrompt = new AttributedStringBuilder()
-                  .append(" 📝 Description: ", AttributedStyle.DEFAULT.foreground(AttributedStyle.WHITE))
+                  .append("\n 📝 Description: ", AttributedStyle.DEFAULT.foreground(AttributedStyle.WHITE))
                   .toAnsi();
           String newDescription = lineReader.readLine(descPrompt);
           taskToUpdate.updateDescription(newDescription);
@@ -213,7 +222,7 @@ public class TaskManager {
     }
   }
 
-  public Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
+  private static Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
     Attributes originalAtributes = terminal.enterRawMode();
 
     try {
