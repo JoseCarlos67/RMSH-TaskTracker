@@ -13,6 +13,7 @@ import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.jline.utils.InfoCmp;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -26,6 +27,9 @@ public class TaskManager {
 
   public static void taskManager() {
     try (Terminal terminal = TerminalBuilder.builder().build()) {
+      terminal.puts(InfoCmp.Capability.clear_screen);
+      terminal.flush();
+
       terminal.writer().println("\u001B[35m" + // Cor Magenta
               "  _____              _      __  __                                \n" +
               " |_   _|_ _ ___ | | __ |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ \n" +
