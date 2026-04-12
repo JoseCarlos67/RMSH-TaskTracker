@@ -14,7 +14,6 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.jline.utils.InfoCmp;
-import org.w3c.dom.Attr;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -31,16 +30,9 @@ public class TaskManager {
       terminal.puts(InfoCmp.Capability.clear_screen);
       terminal.flush();
 
-      terminal.writer().println("\u001B[35m" + // Cor Magenta
-              "  _____              _      __  __                                \n" +
-              " |_   _|_ _ ___ | | __ |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ \n" +
-              "   | |/ _` / __|| |/ / | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|\n" +
-              "   | | (_| \\__ \\|   <  | |  | | (_| | | | | (_| | (_| |  __/ |   \n" +
-              "   |_|\\__,_|___/|_|\\_\\ |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   \n" +
-              "                                                  |___/           " +
-              "\u001B[0m");
+      showBanner(terminal);
 
-      Completer autoCompleter = new StringsCompleter("new", "list", "delete", "update", "exit", "help");
+      Completer autoCompleter = new StringsCompleter("new", "list", "delete", "update", "exit", "help", "clear");
 
       LineReader lineReader = LineReaderBuilder.builder()
               .terminal(terminal)
@@ -76,6 +68,11 @@ public class TaskManager {
             break;
           case "help":
             showHelp(terminal);
+            break;
+          case "clear":
+            terminal.puts(InfoCmp.Capability.clear_screen);
+            terminal.flush();
+            showBanner(terminal);
             break;
           case "exit":
             System.exit(0);
@@ -261,10 +258,22 @@ public class TaskManager {
     terminal.writer().printf("%-35s %s\n", cGreen + "list" + cReset, "List all tasks");
     terminal.writer().printf("%-39s %s\n", cGreen + "delete " + cFaint + "[id]" + cReset, "Remove a task permanently");
     terminal.writer().printf("%-39s %s\n", cGreen + "update " + cFaint + "[field] [id]" + cReset, "Update 'description' or 'status'");
+    terminal.writer().printf("%-35s %s\n", cGreen + "clear" + cReset, "Clean the terminal");
     terminal.writer().printf("%-35s %s\n", cGreen + "exit" + cReset, "Close the task manager");
 
     terminal.writer().println("━".repeat(60));
     terminal.writer().flush();
+  }
+
+  private static void showBanner(Terminal terminal) {
+    terminal.writer().println("\u001B[35m" + // Cor Magenta
+            "  _____              _      __  __                                \n" +
+            " |_   _|_ _ ___ | | __ |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ \n" +
+            "   | |/ _` / __|| |/ / | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|\n" +
+            "   | | (_| \\__ \\|   <  | |  | | (_| | | | | (_| | (_| |  __/ |   \n" +
+            "   |_|\\__,_|___/|_|\\_\\ |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   \n" +
+            "                                                  |___/           " +
+            "\u001B[0m");
   }
 
   private static   Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
