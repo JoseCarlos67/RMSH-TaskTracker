@@ -58,7 +58,7 @@ public class TaskManager {
             newTask(terminal, prompt, lineReader);
             break;
           case "list":
-            listTasks(terminal);
+            listTasks(command, terminal);
             break;
           case "delete":
             deleteTask(command, terminal);
@@ -126,14 +126,40 @@ public class TaskManager {
     }
   }
 
-  private static void listTasks(Terminal terminal) throws IOException {
+  private static void listTasks(String[] command, Terminal terminal) throws IOException {
     List<Task> taskList = jsonReaderService.listOfTaskInJsonFile();
     terminal.writer().println(new AttributedStringBuilder()
-            .append(String.format("\n %-4s | %-25s | %-12s", "ID", "DESCRIÇÃO", "STATUS")
+            .append(String.format("\n %-4s | %-25s | %-12s", "ID", "DESCRIPTION", "STATUS")
                     , AttributedStyle.DEFAULT.italic().foreground(AttributedStyle.BRIGHT))
             .toAnsi());
     terminal.writer().println("━".repeat(50));
 
+    if (command.length == 1){
+      printList(taskList, terminal);
+    } else {
+      if (Objects.equals(command[1], "TODO")) {
+        List<Task> taskListTodo = taskList.stream().filter(t -> t.getStatus().equals(Status.TODO)).toList();
+        printList(taskListTodo, terminal);
+      }
+       else if (Objects.equals(command[1], "IN_PROGRESS")) {
+        List<Task> taskListInProgress = taskList.stream().filter(t -> t.getStatus().equals(Status.IN_PROGRESS)).toList();
+        printList(taskListInProgress, terminal);
+      }
+      else if (Objects.equals(command[1], "DONE")) {
+        List<Task> taskListDone = taskList.stream().filter(t -> t.getStatus().equals(Status.DONE)).toList();
+        printList(taskListDone, terminal);
+      }
+      else {
+        AttributedString error = new AttributedStringBuilder()
+                .append("\n\uD83D\uDEAB", AttributedStyle.DEFAULT)
+                .append("  Error: Status not found!", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold())
+                .toAttributedString();
+        terminal.writer().println(error.toAnsi());
+      }
+    }
+  }
+
+  private static void printList(List<Task> taskList, Terminal terminal) {
     for (Task t : taskList) {
       String statusColor = switch (t.getStatus()) {
         case DONE -> "\u001B[32m"; // Verde
@@ -255,7 +281,7 @@ public class TaskManager {
     String cFaint = "\u001B[2m";    // Cinza/Fosco para os parâmetros
 
     terminal.writer().printf("%-35s %s\n", cGreen + "new" + cReset, "Create a new task");
-    terminal.writer().printf("%-35s %s\n", cGreen + "list" + cReset, "List all tasks");
+    terminal.writer().printf("%-39s %s\n", cGreen + "list " + cFaint + "[status]" + cReset, "List tasks");
     terminal.writer().printf("%-39s %s\n", cGreen + "delete " + cFaint + "[id]" + cReset, "Remove a task permanently");
     terminal.writer().printf("%-39s %s\n", cGreen + "update " + cFaint + "[field] [id]" + cReset, "Update 'description' or 'status'");
     terminal.writer().printf("%-35s %s\n", cGreen + "clear" + cReset, "Clean the terminal");
