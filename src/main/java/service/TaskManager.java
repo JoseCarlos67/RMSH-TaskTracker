@@ -147,9 +147,21 @@ public class TaskManager {
       int idToRemoveInt = Integer.parseInt(command[1]);
       List<Task> taskList = jsonReaderService.listOfTaskInJsonFile();
 
-      taskList.removeIf(task -> task.getId() == idToRemoveInt);
-      JsonWriterService jsonWriterService = new JsonWriterService();
-      jsonWriterService.updateJsonFile(taskList);
+      if (taskList.removeIf(task -> task.getId() == idToRemoveInt)) {
+        JsonWriterService jsonWriterService = new JsonWriterService();
+        jsonWriterService.updateJsonFile(taskList);
+        terminal.writer().println(new AttributedStringBuilder()
+                .append("\n ✅ Task successfully deleted!", AttributedStyle.BOLD.foreground(AttributedStyle.GREEN))
+                .toAnsi());
+      } else {
+        AttributedString error = new AttributedStringBuilder()
+                .append("\n\uD83D\uDEAB", AttributedStyle.DEFAULT)
+                .append("  Error: ID not found!", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold())
+                .toAttributedString();
+        terminal.writer().println(error.toAnsi());
+      }
+
+
     } else {
       AttributedString error = new AttributedStringBuilder()
               .append("\n\uD83D\uDEAB", AttributedStyle.DEFAULT)
