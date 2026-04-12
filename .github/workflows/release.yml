@@ -77,7 +77,7 @@ jobs:
           name: linux-rpm
           path: output/*.rpm
 
-  # --- JOB 3: CRIAR A RELEASE NO GITHUB E ANEXAR TUDO ---
+  # --- JOB3: CRIAR A RELEASE NO GITHUB E ANEXAR TUDO ---
   create-release:
     needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
