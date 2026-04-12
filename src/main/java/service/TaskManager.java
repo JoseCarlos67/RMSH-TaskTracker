@@ -16,12 +16,12 @@ import org.jline.utils.AttributedStyle;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public class TaskManager {
-  private static String filePath = "src/main/java/files/tasks.json";
   private static JsonReaderService jsonReaderService = new JsonReaderService();
 
   public static void taskManager() {
@@ -99,11 +99,15 @@ public class TaskManager {
 
       Status status = showInteractiveStatusMenu(terminal);
 
-      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
+      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile();
+      if(taskList == null) {
+        taskList = new ArrayList<>();
+      }
       JsonWriterService jsonWriterService = new JsonWriterService();
 
       Task newTask = new Task(description, status);
       taskList.add(newTask);
+
       jsonWriterService.updateJsonFile(taskList);
 
       terminal.writer().println(new AttributedStringBuilder()
@@ -118,7 +122,7 @@ public class TaskManager {
   }
 
   private static void listTasks(Terminal terminal) throws IOException {
-    List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
+    List<Task> taskList = jsonReaderService.listOfTaskInJsonFile();
     terminal.writer().println(new AttributedStringBuilder()
             .append(String.format("\n %-4s | %-25s | %-12s", "ID", "DESCRIÇÃO", "STATUS")
                     , AttributedStyle.DEFAULT.italic().foreground(AttributedStyle.BRIGHT))
@@ -140,8 +144,8 @@ public class TaskManager {
 
   private static void deleteTask(String[] command, Terminal terminal) {
     if (command.length == 2) {
-      int idToRemoveInt = Integer.parseInt(command[2]);
-      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
+      int idToRemoveInt = Integer.parseInt(command[1]);
+      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile();
 
       taskList.removeIf(task -> task.getId() == idToRemoveInt);
       JsonWriterService jsonWriterService = new JsonWriterService();
@@ -158,7 +162,7 @@ public class TaskManager {
   private static void updateTask(Terminal terminal, String prompt, LineReader lineReader, String[] command) {
     if (command.length == 3) {
       int taskId = Integer.parseInt(command[2]);
-      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile(filePath);
+      List<Task> taskList = jsonReaderService.listOfTaskInJsonFile();
 
       if (Objects.equals(command[1], "description")) {
         Task taskToUpdate = taskList.stream().filter(t -> t.getId().equals(taskId)).findFirst().orElse(null);
