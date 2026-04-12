@@ -14,6 +14,7 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.jline.utils.InfoCmp;
+import org.w3c.dom.Attr;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class TaskManager {
               "                                                  |___/           " +
               "\u001B[0m");
 
-      Completer autoCompleter = new StringsCompleter("new", "list", "delete", "update", "exit");
+      Completer autoCompleter = new StringsCompleter("new", "list", "delete", "update", "exit", "help");
 
       LineReader lineReader = LineReaderBuilder.builder()
               .terminal(terminal)
@@ -48,7 +49,7 @@ public class TaskManager {
 
 
       String prompt = new AttributedStringBuilder()
-              .append("\n task ", AttributedStyle.DEFAULT.background(AttributedStyle.BLUE).foreground(AttributedStyle.WHITE))
+              .append("\n Task-Manager ", AttributedStyle.DEFAULT.background(AttributedStyle.BLUE).foreground(AttributedStyle.WHITE))
               .append("\uE0B0 ", AttributedStyle.DEFAULT.foreground(AttributedStyle.BLUE))
               .append("❯ ", AttributedStyle.BOLD.foreground(AttributedStyle.YELLOW))
               .toAnsi();
@@ -72,6 +73,9 @@ public class TaskManager {
             break;
           case "update":
             updateTask(terminal, prompt, lineReader, command);
+            break;
+          case "help":
+            showHelp(terminal);
             break;
           case "exit":
             System.exit(0);
@@ -242,7 +246,28 @@ public class TaskManager {
     }
   }
 
-  private static Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
+  private static void showHelp(Terminal terminal) {
+    terminal.writer().println(new AttributedStringBuilder()
+            .append("\n📖 COMMAND GUID", AttributedStyle.BOLD.foreground(AttributedStyle.CYAN))
+            .toAnsi());
+
+    terminal.writer().println("━".repeat(60));
+
+    String cGreen = "\u001B[32;1m"; // Verde Negrito
+    String cReset = "\u001B[0m";    // Reset
+    String cFaint = "\u001B[2m";    // Cinza/Fosco para os parâmetros
+
+    terminal.writer().printf("%-35s %s\n", cGreen + "new" + cReset, "Create a new task");
+    terminal.writer().printf("%-35s %s\n", cGreen + "list" + cReset, "List all tasks");
+    terminal.writer().printf("%-39s %s\n", cGreen + "delete " + cFaint + "[id]" + cReset, "Remove a task permanently");
+    terminal.writer().printf("%-39s %s\n", cGreen + "update " + cFaint + "[field] [id]" + cReset, "Update 'description' or 'status'");
+    terminal.writer().printf("%-35s %s\n", cGreen + "exit" + cReset, "Close the task manager");
+
+    terminal.writer().println("━".repeat(60));
+    terminal.writer().flush();
+  }
+
+  private static   Status showInteractiveStatusMenu(Terminal terminal) throws IOException {
     Attributes originalAtributes = terminal.enterRawMode();
 
     try {
