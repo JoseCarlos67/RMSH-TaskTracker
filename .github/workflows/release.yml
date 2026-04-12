@@ -3,9 +3,10 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*' # Dispara quando tu crias uma tag (ex: v1.0.0)
+      - 'v*'
 
 jobs:
+  # --- JOB 1: GERAR O EXE PARA WINDOWS ---
   build-windows:
     runs-on: windows-latest
     steps:
@@ -21,9 +22,6 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean package
-
-      - name: Install WiX Toolset
-        run: dotnet tool install --global wix
 
       - name: Generate EXE with jpackage
         run: |
@@ -41,17 +39,64 @@ jobs:
           name: windows-exe
           path: output/*.exe
 
-  create-release:
-    needs: build-windows
+  # --- JOB 2: GERAR O RPM PARA LINUX (FEDORA) ---
+  build-linux:
     runs-on: ubuntu-latest
     steps:
-      - name: Download Artifacts
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Install RPM Build Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Generate RPM with jpackage
+        run: |
+          jpackage --name "rmsh-taskmanager" \
+                   --input target/ \
+                   --main-jar RMSH-TaskTracker-1.0-SNAPSHOT.jar \
+                   --type rpm \
+                   --dest output/ \
+                   --linux-shortcut \
+                   --linux-menu-group "Utility"
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-rpm
+          path: output/*.rpm
+
+  # --- JOB 3: CRIAR A RELEASE NO GITHUB E ANEXAR TUDO ---
+  create-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows Artifact
         uses: actions/download-artifact@v4
+        with:
+          name: windows-exe
+          path: release-files
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-rpm
+          path: release-files
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            windows-exe/*.exe
+          files: release-files/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
