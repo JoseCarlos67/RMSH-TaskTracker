@@ -22,6 +22,7 @@ sudo dnf install ./rmsh-taskmanager-1.0-3.noarch.rpm
 ```
 
 ### 🪟 Windows (.exe)
+**⚠️ OBS:** A versão para Windows ainda não foi devidamente testada!
 1. Vá até a aba **Releases** e faça o download do arquivo **RMSH-TaskManager-1.0.exe**.
 
 2. Execute o instalador e siga os passos (será criado um atalho no Menu Iniciar e Desktop).
