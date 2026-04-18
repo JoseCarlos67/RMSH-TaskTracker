@@ -16,13 +16,13 @@ O **Task-Manager** é uma aplicação de linha de comando (CLI) intuitiva para g
 ## 🚀 Como Instalar
 
 ### 🐧 Linux (Fedora/Distros baseadas em RPM)
-Faça o download do arquivo  **Source code(tar.gz)** na aba **Releases** e instale via terminal:
+Faça o download do arquivo **rmsh-taskmanager-1.0-1.x86_64.rpm** na aba **Releases** e instale via terminal:
 ```bash
 sudo dnf install ./rmsh-taskmanager-1.0-3.noarch.rpm
 ```
 
 ### 🪟 Windows (.exe)
-1. Vá até a aba **Releases** e faça o download do arquivo **Source code (zip)**.
+1. Vá até a aba **Releases** e faça o download do arquivo **RMSH-TaskManager-1.0.exe**.
 
 2. Execute o instalador e siga os passos (será criado um atalho no Menu Iniciar e Desktop).
 

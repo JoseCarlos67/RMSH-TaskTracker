@@ -164,7 +164,7 @@ public class TaskManager {
       String statusColor = switch (t.getStatus()) {
         case DONE -> "\u001B[32m"; // Verde
         case IN_PROGRESS -> "\u001B[34m"; // Azul
-        default -> "\u001B[37m"; // Branco
+        default -> "\u001B[33m"; // Branco
       };
 
       terminal.writer().printf(" #%03d | %-25s | %s%s\u001B[0m\n",
@@ -328,8 +328,8 @@ public class TaskManager {
         for (int i = 0; i < options.size(); i++) {
           String label = options.get(i);
           String icon = switch (label) {
-            case "TODO" -> "\u26AA";
-            case "IN_PROGRESS" -> "\uD83D\uDD35";
+            case "TODO" -> "\u26A0\uFE0F ";
+            case "IN_PROGRESS" -> "\uD83D\uDCCB";
             case "DONE" -> "\u2705";
             default -> "\uD83D\uDCCB";
           };
